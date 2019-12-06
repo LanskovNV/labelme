@@ -68,6 +68,7 @@ shortcuts:
   create_line: null
   create_point: null
   create_linestrip: null
+  create_curve: null
   edit_polygon: Ctrl+J
   delete_polygon: Delete
   duplicate_polygon: Ctrl+D

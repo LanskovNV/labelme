@@ -300,6 +300,14 @@ class MainWindow(QtWidgets.QMainWindow):
             'Start drawing linestrip. Ctrl+LeftClick ends creation.',
             enabled=False,
         )
+        createCurveMode = action(
+            'Create Curve',
+            lambda: self.toggleDrawMode(False, createMode='line'),
+            shortcuts['create_curve'],
+            'objects',
+            'Start drawing curve.',
+            enabled=False,
+        )
         editMode = action('Edit Polygons', self.setEditMode,
                           shortcuts['edit_polygon'], 'edit',
                           'Move and edit the selected polygons', enabled=False)
@@ -427,6 +435,7 @@ class MainWindow(QtWidgets.QMainWindow):
             createLineMode=createLineMode,
             createPointMode=createPointMode,
             createLineStripMode=createLineStripMode,
+            createCurveMode=createCurveMode,
             shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
             zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
             fitWindow=fitWindow, fitWidth=fitWidth,
@@ -458,6 +467,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 createLineMode,
                 createPointMode,
                 createLineStripMode,
+                createCurveMode,
                 editMode,
                 edit,
                 copy,

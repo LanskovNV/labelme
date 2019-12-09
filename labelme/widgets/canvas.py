@@ -331,6 +331,10 @@ class Canvas(QtWidgets.QWidget):
             self.repaint()
 
     def mouseReleaseEvent(self, ev):
+        if QT5:
+            pos = self.transformPos(ev.localPos())
+        else:
+            pos = self.transformPos(ev.posF())
         if ev.button() == QtCore.Qt.RightButton:
             menu = self.menus[len(self.selectedShapesCopy) > 0]
             self.restoreCursor()
@@ -344,6 +348,20 @@ class Canvas(QtWidgets.QWidget):
         if self.movingShape:
             self.storeShapes()
             self.shapeMoved.emit()
+        if ev.button() == QtCore.Qt.LeftButton \
+            and self.drawing() and self.createMode == 'curve':
+
+            if self.current:
+                # Add point to existing shape.
+                pass
+            elif not self.outOfPixmap(pos):
+                # Create new shape.
+                self.current = Shape(shape_type=self.createMode)
+                self.current.addPoint(pos)
+                self.line.points = [pos, pos]
+                self.setHiding()
+                self.drawingPolygon.emit(True)
+                self.update()
 
     def endMove(self, copy):
         assert self.selectedShapes and self.selectedShapesCopy

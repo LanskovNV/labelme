@@ -41,6 +41,7 @@ class Shape(object):
         self.label = label
         self.points = []
         self.segments = []
+        self.segments_len = 0
         self.fill = False
         self.selected = False
         self.shape_type = shape_type
@@ -79,11 +80,31 @@ class Shape(object):
     def close(self):
         self._closed = True
 
-    def addPoint(self, point):
-        if self.points and point == self.points[0]:
-            self.close()
+    def addPoint(self, point, is_release):
+        if is_release and self.shape_type == 'curve':
+            seg_begin = 0
+            seg_len = 0
+            if len(self.points) - self.segments_len + 1 == 2:
+                if point == self.points[-1]:
+                    seg_begin = len(self.points) - 2
+                    seg_len = 2
+                else:
+                    self.points.append(point)
+                    seg_begin = len(self.points) - 3
+                    seg_len = 3
+
+            if len(self.points) - self.segments_len + 1 == 3:
+                if point == self.points[-1]:
+                    pass
+                else:
+                    pass
+            if seg_begin and seg_len:
+                self.addSegment(seg_begin, seg_len)
         else:
-            self.points.append(point)
+            if self.points and point == self.points[0]:
+                self.close()
+            else:
+                self.points.append(point)
 
     def popPoint(self):
         if self.points:

@@ -293,7 +293,7 @@ class Canvas(QtWidgets.QWidget):
                 if self.current:
                     # Add point to existing shape.
                     if self.createMode == 'polygon':
-                        self.current.addPoint(self.line[1])
+                        self.current.addPoint(self.line[1], 0)
                         self.line[0] = self.current[-1]
                         if self.current.isClosed():
                             self.finalise()
@@ -302,14 +302,14 @@ class Canvas(QtWidgets.QWidget):
                         self.current.points = self.line.points
                         self.finalise()
                     elif self.createMode == 'linestrip':
-                        self.current.addPoint(self.line[1])
+                        self.current.addPoint(self.line[1], 0)
                         self.line[0] = self.current[-1]
                         if int(ev.modifiers()) == QtCore.Qt.ControlModifier:
                             self.finalise()
                 elif not self.outOfPixmap(pos):
                     # Create new shape.
                     self.current = Shape(shape_type=self.createMode)
-                    self.current.addPoint(pos)
+                    self.current.addPoint(pos, 0)
                     if self.createMode == 'point':
                         self.finalise()
                     else:
@@ -357,7 +357,7 @@ class Canvas(QtWidgets.QWidget):
             elif not self.outOfPixmap(pos):
                 # Create new shape.
                 self.current = Shape(shape_type=self.createMode)
-                self.current.addPoint(pos)
+                self.current.addPoint(pos, 1)
                 self.line.points = [pos, pos]
                 self.setHiding()
                 self.drawingPolygon.emit(True)

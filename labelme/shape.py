@@ -80,26 +80,46 @@ class Shape(object):
     def close(self):
         self._closed = True
 
+    def addOppozitePointForCurve(self, point):
+        last = self.points[-1]
+        new_p = []
+        half_h = abs(last[1] - point[1])
+        half_w = abs(last[0] - point[0])
+        if last[0] > point[0]:
+            new_p.append(last[0] + half_w)
+        else:
+            new_p.append(last[0] - half_w)
+        if last[1] > point[1]:
+            new_p.append(last[1] + half_h)
+        else:
+            new_p.append(last[1] - half_h)
+        self.insertPoint(-2, new_p)
+
+    def addSegment(self, seg_begin, seg_len):
+        self.segments_len += seg_len
+        new_segment = [seg_begin, seg_len]
+        self.segments.append(new_segment)
+
     def addPoint(self, point, is_release):
         if is_release and self.shape_type == 'curve':
             seg_begin = 0
             seg_len = 0
+            # should be 0 or 1
+            degree_increment = len(self.points) - self.segments_len - 1
             if len(self.points) - self.segments_len + 1 == 2:
                 if point == self.points[-1]:
-                    seg_begin = len(self.points) - 2
-                    seg_len = 2
+                    size = 2 + degree_increment
+                    seg_begin = len(self.points) - size
+                    seg_len = size
                 else:
-                    self.points.append(point)
-                    seg_begin = len(self.points) - 3
-                    seg_len = 3
+                    size = 3 + degree_increment
+                    self.addOppozitePointForCurve(point)
+                    seg_begin = len(self.points) - size
+                    seg_len = size
 
-            if len(self.points) - self.segments_len + 1 == 3:
-                if point == self.points[-1]:
-                    pass
-                else:
-                    pass
-            if seg_begin and seg_len:
+            if seg_begin != 0 and seg_len != 0:
                 self.addSegment(seg_begin, seg_len)
+                self.points.append(point)
         else:
             if self.points and point == self.points[0]:
                 self.close()

@@ -182,7 +182,7 @@ class Canvas(QtWidgets.QWidget):
                 color = self.current.line_color
                 self.overrideCursor(CURSOR_POINT)
                 self.current.highlightVertex(0, Shape.NEAR_VERTEX)
-            if self.createMode in ['polygon', 'linestrip']:
+            if self.createMode in ['polygon', 'linestrip', 'curve']:
                 self.line[0] = self.current[-1]
                 self.line[1] = pos
             elif self.createMode == 'rectangle':
@@ -292,7 +292,7 @@ class Canvas(QtWidgets.QWidget):
             if self.drawing():
                 if self.current:
                     # Add point to existing shape.
-                    if self.createMode == 'polygon':
+                    if self.createMode in ['polygon', 'curve']:
                         self.current.addPoint(self.line[1], 0)
                         self.line[0] = self.current[-1]
                         if self.current.isClosed():
@@ -315,6 +315,9 @@ class Canvas(QtWidgets.QWidget):
                     else:
                         if self.createMode == 'circle':
                             self.current.shape_type = 'circle'
+                        if self.createMode == 'curve':
+                            self.current.shape_type = 'curve'
+                            self.current.point_type = self.current.P_CURVE
                         self.line.points = [pos, pos]
                         self.setHiding()
                         self.drawingPolygon.emit(True)
@@ -348,12 +351,15 @@ class Canvas(QtWidgets.QWidget):
         if self.movingShape:
             self.storeShapes()
             self.shapeMoved.emit()
+        # curves support
         if ev.button() == QtCore.Qt.LeftButton \
             and self.drawing() and self.createMode == 'curve':
-
             if self.current:
                 # Add point to existing shape.
-                pass
+                self.current.addPoint(self.line[1], 1)
+                self.line[0] = self.current[-1]
+                if self.current.isClosed():
+                    self.finalise()
             elif not self.outOfPixmap(pos):
                 # Create new shape.
                 self.current = Shape(shape_type=self.createMode)

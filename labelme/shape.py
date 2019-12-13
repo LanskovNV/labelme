@@ -83,30 +83,34 @@ class Shape(object):
     def addOppozitePointForCurve(self, point):
         last = self.points[-1]
         new_p = []
-        half_h = abs(last[1] - point[1])
-        half_w = abs(last[0] - point[0])
-        if last[0] > point[0]:
-            new_p.append(last[0] + half_w)
+        half_h = abs(last.y() - point.y())
+        half_w = abs(last.x() - point.x())
+        if last.x() > point.x():
+            new_p.append(last.x() + half_w)
         else:
-            new_p.append(last[0] - half_w)
-        if last[1] > point[1]:
-            new_p.append(last[1] + half_h)
+            new_p.append(last.x() - half_w)
+        if last.y() > point.y():
+            new_p.append(last.y() + half_h)
         else:
-            new_p.append(last[1] - half_h)
+            new_p.append(last.y() - half_h)
         self.insertPoint(-2, new_p)
 
     def addSegment(self, seg_begin, seg_len):
+        if len(self.segments) == 0:
+            self.segments_len = 0
         self.segments_len += seg_len
         new_segment = [seg_begin, seg_len]
         self.segments.append(new_segment)
 
-    def addPoint(self, point, is_release):
+    def addPoint(self, point, is_release=0):
         if is_release and self.shape_type == 'curve':
-            seg_begin = 0
-            seg_len = 0
             # should be 0 or 1
-            degree_increment = len(self.points) - self.segments_len - 1
-            if len(self.points) - self.segments_len + 1 == 2:
+            if point == self.points[-1] and len(self.points) == 1:
+                self.segments_len += 1
+            else:
+                degree_increment = len(self.points) - self.segments_len - 1
+                print("degree increment")
+                print(degree_increment)
                 if point == self.points[-1]:
                     size = 2 + degree_increment
                     seg_begin = len(self.points) - size
@@ -116,10 +120,8 @@ class Shape(object):
                     self.addOppozitePointForCurve(point)
                     seg_begin = len(self.points) - size
                     seg_len = size
-
-            if seg_begin != 0 and seg_len != 0:
+                    self.points.append(point)
                 self.addSegment(seg_begin, seg_len)
-                self.points.append(point)
         else:
             if self.points and point == self.points[0]:
                 self.close()
@@ -179,7 +181,8 @@ class Shape(object):
             elif self.shape_type == "curve":
                 line_path.moveTo(self.points[0])
                 for i, s in enumerate(self.segments):
-                    line_path.lineTo(self.points[s[i][0]])
+                    print(s[0])
+                    line_path.lineTo(self.points[s[0]])
                     self.drawVertex(vrtx_path, i)
             else:
                 line_path.moveTo(self.points[0])
@@ -226,7 +229,8 @@ class Shape(object):
                 path.quadTo(self.points[beg_p_ind + 1], self.points[beg_p_ind + 2])
             elif segment[1] != 2:
                 # TODO handle it correctly !!!
-                print("error")
+                print("error!")
+                print(segment[1])
         else:
             assert False, "unsupported vertex shape"
 

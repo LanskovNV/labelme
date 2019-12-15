@@ -126,8 +126,17 @@ class Shape(object):
                     seg_len = size
                     self.points.append(point)
                 self.addSegment(seg_begin, seg_len)
+                if point == self.points[0]:
+                    self.points.pop(-1)
+                    self.close()
         else:
             if self.points and point == self.points[0]:
+                degree_increment = max(len(self.points) - self.segments_len, 0)
+                if self.shape_type == 'curve' and degree_increment == 1:
+                    size = 2 + degree_increment
+                    seg_begin = len(self.points) - size + 1
+                    seg_len = size
+                    self.addSegment(seg_begin, seg_len)
                 self.close()
             else:
                 self.points.append(point)
@@ -226,7 +235,10 @@ class Shape(object):
         if segment[1] == 4:  # cubic bezier
             path.cubicTo(self.points[beg_p_ind + 1], self.points[beg_p_ind + 2], self.points[beg_p_ind + 3])
         elif segment[1] == 3:  # square bezier
-            path.quadTo(self.points[beg_p_ind + 1], self.points[beg_p_ind + 2])
+            if len(self.points) >= segment[0] + segment[1]:
+                path.quadTo(self.points[beg_p_ind + 1], self.points[beg_p_ind + 2])
+            else:
+                path.quadTo(self.points[beg_p_ind + 1], self.points[0])
         else:  # line
             path.lineTo(self.points[beg_p_ind + 1])
 

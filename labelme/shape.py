@@ -82,7 +82,8 @@ class Shape(object):
 
     def addOppozitePointForCurve(self, point):
         last = self.points[-1]
-        new_p = point
+        new_p = QtCore.QPointF()
+
         half_h = abs(last.y() - point.y())
         half_w = abs(last.x() - point.x())
         if last.x() > point.x():
@@ -93,22 +94,27 @@ class Shape(object):
             new_p.setY(last.y() + half_h)
         else:
             new_p.setY(last.y() - half_h)
-        self.insertPoint(-2, new_p)
+        new_ind = max(len(self.points) - 1, 1)
+        self.insertPoint(new_ind, new_p)
 
     def addSegment(self, seg_begin, seg_len):
         if len(self.segments) == 0:
             self.segments_len = 0
-        self.segments_len += seg_len
+            self.segments_len += seg_len
+        else:
+            self.segments_len += (seg_len - 1)
         new_segment = [seg_begin, seg_len]
         self.segments.append(new_segment)
 
     def addPoint(self, point, is_release=0):
         if is_release and self.shape_type == 'curve':
-            # should be 0 or 1
             if point == self.points[-1] and len(self.points) == 1:
                 self.segments_len += 1
+            elif len(self.segments) == 0 and len(self.points) == 1:
+                self.points.append(point)
+                self.segments_len += 1
             else:
-                degree_increment = len(self.points) - self.segments_len - 1
+                degree_increment = max(len(self.points) - self.segments_len - 1, 0)
                 if point == self.points[-1]:
                     size = 2 + degree_increment
                     seg_begin = len(self.points) - size
@@ -179,10 +185,10 @@ class Shape(object):
             elif self.shape_type == "curve":
                 line_path.moveTo(self.points[0])
                 for i, p in enumerate(self.points):
-                    line_path.lineTo(p)
                     self.drawVertex(vrtx_path, i)
                 for s in self.segments:
-                    self.drawSegment(vrtx_path, s)
+                    line_path.moveTo(self.points[s[0]])
+                    self.drawSegment(line_path, s)
                 if self.isClosed():
                     line_path.lineTo(self.points[0])
             else:
@@ -200,7 +206,6 @@ class Shape(object):
 
             painter.drawPath(line_path)
             painter.drawPath(vrtx_path)
-            painter.fillPath(vrtx_path, self.vertex_fill_color)
             if self.fill:
                 color = self.select_fill_color \
                     if self.selected else self.fill_color
@@ -208,14 +213,12 @@ class Shape(object):
 
     def drawSegment(self, path, segment):
         beg_p_ind = segment[0]
-        if segment[1] == 4:
+        if segment[1] == 4:  # cubic bezier
             path.cubicTo(self.points[beg_p_ind + 1], self.points[beg_p_ind + 2], self.points[beg_p_ind + 3])
-        elif segment[1] == 3:
+        elif segment[1] == 3:  # square bezier
             path.quadTo(self.points[beg_p_ind + 1], self.points[beg_p_ind + 2])
-        elif segment[1] != 2:
-            # TODO handle it correctly !!!
-            print("error!")
-            print(segment[1])
+        else:  # line
+            path.lineTo(self.points[beg_p_ind + 1])
 
     def drawVertex(self, path, i):
         d = self.point_size / self.scale

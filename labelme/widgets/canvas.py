@@ -293,7 +293,7 @@ class Canvas(QtWidgets.QWidget):
                 if self.current:
                     # Add point to existing shape.
                     if self.createMode in ['polygon', 'curve']:
-                        self.current.addPoint(self.line[1], 0)
+                        self.current.addPoint(self.line[1])
                         self.line[0] = self.current[-1]
                         if self.current.isClosed():
                             self.finalise()

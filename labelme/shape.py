@@ -156,7 +156,7 @@ class Shape(object):
             color = self.select_line_color \
                 if self.selected else self.line_color
             pen = QtGui.QPen(color)
-            dash_pen = QtGui.QPen(QtCore.Qt.gray, 1, QtCore.Qt.DashLine)
+            dash_pen = QtGui.QPen(QtCore.Qt.blue, 1, QtCore.Qt.DashLine)
             dash_pen.setWidth(max(1, int(round(2.0 / self.scale))))
             # Try using integer sizes for smoother drawing(?)
             pen.setWidth(max(1, int(round(2.0 / self.scale))))

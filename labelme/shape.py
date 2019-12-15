@@ -156,12 +156,15 @@ class Shape(object):
             color = self.select_line_color \
                 if self.selected else self.line_color
             pen = QtGui.QPen(color)
+            dash_pen = QtGui.QPen(QtCore.Qt.gray, 1, QtCore.Qt.DashLine)
+            dash_pen.setWidth(max(1, int(round(2.0 / self.scale))))
             # Try using integer sizes for smoother drawing(?)
             pen.setWidth(max(1, int(round(2.0 / self.scale))))
             painter.setPen(pen)
 
             line_path = QtGui.QPainterPath()
             vrtx_path = QtGui.QPainterPath()
+            source_curve_path = QtGui.QPainterPath()
 
             if self.shape_type == 'rectangle':
                 assert len(self.points) in [1, 2]
@@ -184,8 +187,10 @@ class Shape(object):
                     self.drawVertex(vrtx_path, i)
             elif self.shape_type == "curve":
                 line_path.moveTo(self.points[0])
+                source_curve_path.moveTo(self.points[0])
                 for i, p in enumerate(self.points):
                     self.drawVertex(vrtx_path, i)
+                    source_curve_path.lineTo(p)
                 for s in self.segments:
                     line_path.moveTo(self.points[s[0]])
                     self.drawSegment(line_path, s)
@@ -204,8 +209,13 @@ class Shape(object):
                 if self.isClosed():
                     line_path.lineTo(self.points[0])
 
+            if self.shape_type == "curve":
+                painter.setPen(dash_pen)
+                painter.drawPath(source_curve_path)
+                painter.setPen(pen)
             painter.drawPath(line_path)
             painter.drawPath(vrtx_path)
+
             if self.fill:
                 color = self.select_fill_color \
                     if self.selected else self.fill_color

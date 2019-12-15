@@ -82,17 +82,17 @@ class Shape(object):
 
     def addOppozitePointForCurve(self, point):
         last = self.points[-1]
-        new_p = []
+        new_p = point
         half_h = abs(last.y() - point.y())
         half_w = abs(last.x() - point.x())
         if last.x() > point.x():
-            new_p.append(last.x() + half_w)
+            new_p.setX(last.x() + half_w)
         else:
-            new_p.append(last.x() - half_w)
+            new_p.setX(last.x() - half_w)
         if last.y() > point.y():
-            new_p.append(last.y() + half_h)
+            new_p.setY(last.y() + half_h)
         else:
-            new_p.append(last.y() - half_h)
+            new_p.setY(last.y() - half_h)
         self.insertPoint(-2, new_p)
 
     def addSegment(self, seg_begin, seg_len):
@@ -109,8 +109,6 @@ class Shape(object):
                 self.segments_len += 1
             else:
                 degree_increment = len(self.points) - self.segments_len - 1
-                print("degree increment")
-                print(degree_increment)
                 if point == self.points[-1]:
                     size = 2 + degree_increment
                     seg_begin = len(self.points) - size
@@ -181,7 +179,7 @@ class Shape(object):
             elif self.shape_type == "curve":
                 line_path.moveTo(self.points[0])
                 for i, s in enumerate(self.segments):
-                    print(s[0])
+                    # print(s[0])
                     line_path.lineTo(self.points[s[0]])
                     self.drawVertex(vrtx_path, i)
             else:

@@ -317,7 +317,6 @@ class Canvas(QtWidgets.QWidget):
                             self.current.shape_type = 'circle'
                         if self.createMode == 'curve':
                             self.current.shape_type = 'curve'
-                            self.current.point_type = self.current.P_CURVE
                         self.line.points = [pos, pos]
                         self.setHiding()
                         self.drawingPolygon.emit(True)

@@ -21,7 +21,7 @@ DEFAULT_HVERTEX_FILL_COLOR = QtGui.QColor(255, 0, 0)
 
 class Shape(object):
 
-    P_SQUARE, P_ROUND, P_CURVE = 0, 1, 2
+    P_SQUARE, P_ROUND = 0, 1
 
     MOVE_VERTEX, NEAR_VERTEX = 0, 1
 
@@ -178,10 +178,13 @@ class Shape(object):
                     self.drawVertex(vrtx_path, i)
             elif self.shape_type == "curve":
                 line_path.moveTo(self.points[0])
-                for i, s in enumerate(self.segments):
-                    # print(s[0])
-                    line_path.lineTo(self.points[s[0]])
+                for i, p in enumerate(self.points):
+                    line_path.lineTo(p)
                     self.drawVertex(vrtx_path, i)
+                for s in self.segments:
+                    self.drawSegment(vrtx_path, s)
+                if self.isClosed():
+                    line_path.lineTo(self.points[0])
             else:
                 line_path.moveTo(self.points[0])
                 # Uncommenting the following line will draw 2 paths
@@ -203,6 +206,17 @@ class Shape(object):
                     if self.selected else self.fill_color
                 painter.fillPath(line_path, color)
 
+    def drawSegment(self, path, segment):
+        beg_p_ind = segment[0]
+        if segment[1] == 4:
+            path.cubicTo(self.points[beg_p_ind + 1], self.points[beg_p_ind + 2], self.points[beg_p_ind + 3])
+        elif segment[1] == 3:
+            path.quadTo(self.points[beg_p_ind + 1], self.points[beg_p_ind + 2])
+        elif segment[1] != 2:
+            # TODO handle it correctly !!!
+            print("error!")
+            print(segment[1])
+
     def drawVertex(self, path, i):
         d = self.point_size / self.scale
         shape = self.point_type
@@ -218,17 +232,6 @@ class Shape(object):
             path.addRect(point.x() - d / 2, point.y() - d / 2, d, d)
         elif shape == self.P_ROUND:
             path.addEllipse(point, d / 2.0, d / 2.0)
-        elif shape == self.P_CURVE:
-            segment = self.segments[i]
-            beg_p_ind = segment[0]
-            if segment[1] == 4:
-                path.cubicTo(self.points[beg_p_ind + 1], self.points[beg_p_ind + 2], self.points[beg_p_ind + 3])
-            elif segment[1] == 3:
-                path.quadTo(self.points[beg_p_ind + 1], self.points[beg_p_ind + 2])
-            elif segment[1] != 2:
-                # TODO handle it correctly !!!
-                print("error!")
-                print(segment[1])
         else:
             assert False, "unsupported vertex shape"
 

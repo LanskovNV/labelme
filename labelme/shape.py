@@ -227,7 +227,8 @@ class Shape(object):
                 painter.setPen(pen)
                 qpts = QtGui.QPolygonF(pts)
                 line_path.addPolygon(qpts)
-            painter.drawPath(line_path.simplified())
+                line_path = line_path.simplified()
+            painter.drawPath(line_path)
             painter.drawPath(vrtx_path)
 
             if self.fill:

@@ -165,8 +165,8 @@ class Shape(object):
             color = self.select_line_color \
                 if self.selected else self.line_color
             pen = QtGui.QPen(color)
-            dash_pen = QtGui.QPen(QtCore.Qt.blue, 1, QtCore.Qt.DashLine)
-            dash_pen.setWidth(max(1, int(round(2.0 / self.scale))))
+            dash_pen = QtGui.QPen(QtCore.Qt.blue, 0.5, QtCore.Qt.DashLine)
+            dash_pen.setWidth(0)
             # Try using integer sizes for smoother drawing(?)
             pen.setWidth(max(1, int(round(2.0 / self.scale))))
             painter.setPen(pen)
@@ -174,6 +174,8 @@ class Shape(object):
             line_path = QtGui.QPainterPath()
             vrtx_path = QtGui.QPainterPath()
             source_curve_path = QtGui.QPainterPath()
+
+            pts = []
 
             if self.shape_type == 'rectangle':
                 assert len(self.points) in [1, 2]
@@ -203,6 +205,7 @@ class Shape(object):
                 for s in self.segments:
                     line_path.moveTo(self.points[s[0]])
                     self.drawSegment(line_path, s)
+                    pts.append(self.points[s[0]])
                 if self.isClosed():
                     line_path.lineTo(self.points[0])
             else:
@@ -222,7 +225,9 @@ class Shape(object):
                 painter.setPen(dash_pen)
                 painter.drawPath(source_curve_path)
                 painter.setPen(pen)
-            painter.drawPath(line_path)
+                qpts = QtGui.QPolygonF(pts)
+                line_path.addPolygon(qpts)
+            painter.drawPath(line_path.simplified())
             painter.drawPath(vrtx_path)
 
             if self.fill:

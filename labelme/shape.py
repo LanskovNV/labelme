@@ -226,8 +226,9 @@ class Shape(object):
                 painter.drawPath(source_curve_path)
                 painter.setPen(pen)
                 qpts = QtGui.QPolygonF(pts)
-                line_path.addPolygon(qpts)
-                line_path = line_path.simplified()
+                if self.isClosed():
+                    line_path.addPolygon(qpts)
+                    line_path = line_path.simplified()
             painter.drawPath(line_path)
             painter.drawPath(vrtx_path)
 

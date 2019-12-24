@@ -81,21 +81,26 @@ class Shape(object):
         self._closed = True
 
     def addOppozitePointForCurve(self, point):
-        last = self.points[-1]
         new_p = QtCore.QPointF()
-
-        half_h = abs(last.y() - point.y())
-        half_w = abs(last.x() - point.x())
-        if last.x() > point.x():
-            new_p.setX(last.x() + half_w)
-        else:
-            new_p.setX(last.x() - half_w)
-        if last.y() > point.y():
-            new_p.setY(last.y() + half_h)
-        else:
-            new_p.setY(last.y() - half_h)
+        last = self.points[-1]
+        self.update_segment(point, new_p, last)
         new_ind = max(len(self.points) - 1, 1)
         self.insertPoint(new_ind, new_p)
+
+    # this function calculate pos of p2 regarding center
+    # symmetric with p1
+    # (p1 and p2 lying on diam of circle with center in "center" point)
+    def update_segment(self, p1, p2, center):
+        half_h = abs(center.y() - p1.y())
+        half_w = abs(center.x() - p1.x())
+        if center.x() > p1.x():
+            p2.setX(center.x() + half_w)
+        else:
+            p2.setX(center.x() - half_w)
+        if center.y() > p1.y():
+            p2.setY(center.y() + half_h)
+        else:
+            p2.setY(center.y() - half_h)
 
     def addSegment(self, seg_begin, seg_len):
         if len(self.segments) == 0:
@@ -106,6 +111,24 @@ class Shape(object):
         new_segment = [seg_begin, seg_len]
         self.segments.append(new_segment)
 
+    # TODO:
+    # modify to provide add point to edge option for bezier curves
+    def addPointToSegment(self, point, seg_id):
+        self.segments[seg_id][1] += 1
+
+    def createSegment(self, point, degree_increment):
+        if point == self.points[-1]:
+            size = 2 + degree_increment
+            seg_begin = len(self.points) - size
+            seg_len = size
+        else:
+            size = 3 + degree_increment
+            self.addOppozitePointForCurve(point)
+            seg_begin = len(self.points) - size
+            seg_len = size
+            self.points.append(point)
+        self.addSegment(seg_begin, seg_len)
+
     def addPoint(self, point, is_release=0):
         if is_release and self.shape_type == 'curve':
             if point == self.points[-1] and len(self.points) == 1:
@@ -115,17 +138,7 @@ class Shape(object):
                 self.segments_len += 1
             else:
                 degree_increment = max(len(self.points) - self.segments_len - 1, 0)
-                if point == self.points[-1]:
-                    size = 2 + degree_increment
-                    seg_begin = len(self.points) - size
-                    seg_len = size
-                else:
-                    size = 3 + degree_increment
-                    self.addOppozitePointForCurve(point)
-                    seg_begin = len(self.points) - size
-                    seg_len = size
-                    self.points.append(point)
-                self.addSegment(seg_begin, seg_len)
+                self.createSegment(point, degree_increment)
                 if point == self.points[0]:
                     self.points.pop(-1)
                     self.close()
@@ -165,7 +178,7 @@ class Shape(object):
             color = self.select_line_color \
                 if self.selected else self.line_color
             pen = QtGui.QPen(color)
-            dash_pen = QtGui.QPen(QtCore.Qt.blue, 0.5, QtCore.Qt.DashLine)
+            dash_pen = QtGui.QPen(QtCore.Qt.red, 0.5, QtCore.Qt.DashLine)
             dash_pen.setWidth(0)
             # Try using integer sizes for smoother drawing(?)
             pen.setWidth(max(1, int(round(2.0 / self.scale))))

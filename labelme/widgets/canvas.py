@@ -182,9 +182,17 @@ class Canvas(QtWidgets.QWidget):
                 color = self.current.line_color
                 self.overrideCursor(CURSOR_POINT)
                 self.current.highlightVertex(0, Shape.NEAR_VERTEX)
-            if self.createMode in ['polygon', 'linestrip', 'curve']:
+            if self.createMode in ['polygon', 'linestrip']:
                 self.line[0] = self.current[-1]
                 self.line[1] = pos
+            elif self.createMode == 'curve':
+                # self.line[0] = self.current[-1]
+                if QtCore.Qt.LeftButton and ev.buttons() and len(self.line) > 2:
+                    p1 = self.line[-1]
+                    p2 = self.line[-3]
+                    center = self.line[-2]
+                    self.line.update_segment(p1, p2, center)
+                self.line[-1] = pos
             elif self.createMode == 'rectangle':
                 self.line.points = [self.current[0], pos]
                 self.line.close()
@@ -292,9 +300,22 @@ class Canvas(QtWidgets.QWidget):
             if self.drawing():
                 if self.current:
                     # Add point to existing shape.
-                    if self.createMode in ['polygon', 'curve']:
+                    if self.createMode == 'polygon':
                         self.current.addPoint(self.line[1])
                         self.line[0] = self.current[-1]
+                        if self.current.isClosed():
+                            self.finalise()
+                    elif self.createMode == 'curve':
+                        self.current.addPoint(self.line[1])
+
+                        if len(self.current) == 1:
+                            self.line[0] = self.current[-1]
+                        else:
+                            self.line.points.append(self.current[-1])
+                            degree_increment = max(len(self.current.points) - self.current.segments_len - 1, 0)
+                            self.line.createSegment(pos, degree_increment)
+                            self.line.points.append(self.current[-1])
+
                         if self.current.isClosed():
                             self.finalise()
                     elif self.createMode in ['rectangle', 'circle', 'line']:
@@ -357,6 +378,11 @@ class Canvas(QtWidgets.QWidget):
                 # Add point to existing shape.
                 self.current.addPoint(self.line[1], 1)
                 self.line[0] = self.current[-1]
+
+                # clean old curve segment from self.line shape
+                self.line.segments = []
+                self.line.points = self.line.points[:2]
+
                 if self.current.isClosed():
                     self.finalise()
             elif not self.outOfPixmap(pos):

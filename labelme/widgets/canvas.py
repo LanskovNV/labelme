@@ -148,6 +148,59 @@ class Canvas(QtWidgets.QWidget):
     def selectedVertex(self):
         return self.hVertex is not None
 
+    def addLinePoint(self, pos):
+        # old
+        # -----------------------------------
+        self.current.addPoint(self.line[1])
+        self.line[0] = self.current[-1]
+        if self.current.isClosed():
+            self.finalise()
+
+        # new
+        # ------------------------------------
+        # self.current.addPoint(self.line[1])
+        #
+        # if len(self.current) == 1:
+        #     self.line[0] = self.current[-1]
+        # else:
+        #     self.line.points.append(self.current[-1])
+        #     degree_increment = max(len(self.current.points) - self.current.segments_len - 1, 0)
+        #     self.line.createSegment(pos, degree_increment)
+        #     self.line.points.append(self.current[-1])
+        #
+        # if self.current.isClosed():
+        #     self.finalise()
+
+    def updateLine(self, pos):
+        # old
+        # -----------------------------------
+        # Add point to existing shape.
+        self.current.addPoint(self.line[1], 1)
+        self.line[0] = self.current[-1]
+        if self.current.isClosed():
+            self.finalise()
+
+        # new
+        # ------------------------------------
+        # self.line.segments = []
+        # self.line.points = self.line.points[:2]
+
+    def processLine(self, pos, ev):
+        # old
+        # -----------------------------------
+        self.line[0] = self.current[-1]
+        self.line[1] = pos
+
+        # new
+        # ------------------------------------
+        # self.line[0] = self.current[-1]
+        # if QtCore.Qt.LeftButton and ev.buttons() and len(self.line) > 2:
+        #     p1 = self.line[-1]
+        #     p2 = self.line[-3]
+        #     center = self.line[-2]
+        #     self.line.update_segment(p1, p2, center)
+        # self.line[-1] = pos
+
     def mouseMoveEvent(self, ev):
         """Update line with last point and current coordinates."""
         try:
@@ -186,13 +239,7 @@ class Canvas(QtWidgets.QWidget):
                 self.line[0] = self.current[-1]
                 self.line[1] = pos
             elif self.createMode == 'curve':
-                # self.line[0] = self.current[-1]
-                if QtCore.Qt.LeftButton and ev.buttons() and len(self.line) > 2:
-                    p1 = self.line[-1]
-                    p2 = self.line[-3]
-                    center = self.line[-2]
-                    self.line.update_segment(p1, p2, center)
-                self.line[-1] = pos
+                self.processLine(pos, ev)
             elif self.createMode == 'rectangle':
                 self.line.points = [self.current[0], pos]
                 self.line.close()
@@ -306,18 +353,7 @@ class Canvas(QtWidgets.QWidget):
                         if self.current.isClosed():
                             self.finalise()
                     elif self.createMode == 'curve':
-                        self.current.addPoint(self.line[1])
-
-                        if len(self.current) == 1:
-                            self.line[0] = self.current[-1]
-                        else:
-                            self.line.points.append(self.current[-1])
-                            degree_increment = max(len(self.current.points) - self.current.segments_len - 1, 0)
-                            self.line.createSegment(pos, degree_increment)
-                            self.line.points.append(self.current[-1])
-
-                        if self.current.isClosed():
-                            self.finalise()
+                        self.addLinePoint(pos)
                     elif self.createMode in ['rectangle', 'circle', 'line']:
                         assert len(self.current.points) == 1
                         self.current.points = self.line.points
@@ -373,18 +409,9 @@ class Canvas(QtWidgets.QWidget):
             self.shapeMoved.emit()
         # curves support
         if ev.button() == QtCore.Qt.LeftButton \
-            and self.drawing() and self.createMode == 'curve':
+                and self.drawing() and self.createMode == 'curve':
             if self.current:
-                # Add point to existing shape.
-                self.current.addPoint(self.line[1], 1)
-                self.line[0] = self.current[-1]
-
-                # clean old curve segment from self.line shape
-                self.line.segments = []
-                self.line.points = self.line.points[:2]
-
-                if self.current.isClosed():
-                    self.finalise()
+                self.updateLine(pos)
             elif not self.outOfPixmap(pos):
                 # Create new shape.
                 self.current = Shape(shape_type=self.createMode)

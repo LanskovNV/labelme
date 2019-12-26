@@ -149,22 +149,13 @@ class Canvas(QtWidgets.QWidget):
         return self.hVertex is not None
 
     def addLinePoint(self, pos):
-        # old
-        # -----------------------------------
-        # self.current.addPoint(self.line[1])
-        # self.line[0] = self.current[-1]
-        # if self.current.isClosed():
-        #     self.finalise()
-
-        # new
-        # ------------------------------------
         self.current.addPoint(self.line[-1])
 
         degree_increment = max(len(self.current.points) - self.current.segments_len - 1, 0)
         self.line.createSegment(self.line[-1], degree_increment)
 
         self.line.segments[0][1] += 1
-        ind = len(self.line.points) - 2
+        ind = len(self.line.points) - 1
         self.line.insertPoint(ind, pos)
         self.line.points.append(pos)
 
@@ -172,30 +163,17 @@ class Canvas(QtWidgets.QWidget):
             self.finalise()
 
     def updateLine(self, pos):
-        # old
-        # -----------------------------------
-        # Add point to existing shape.
-        # self.current.addPoint(self.line[1], 1)
-        # self.line[0] = self.current[-1]
-        # if self.current.isClosed():
-        #     self.finalise()
-
-        # new
-        # ------------------------------------
         self.current.addPoint(self.line[-1], 1)
         self.line.segments = []
-        self.line.points = self.line.points = [pos, pos]
+        degree_increment = max(len(self.current.points) - self.current.segments_len - 1, 0)
+        size = 2 + degree_increment
+        ind = max(len(self.current.points) - size, 0)
+        self.line.points = self.current[ind:]
+        self.line.points.append(pos)
         if self.current.isClosed():
             self.finalise()
 
     def processLine(self, pos, ev):
-        # old
-        # -----------------------------------
-        # self.line[0] = self.current[-1]
-        # self.line[1] = pos
-
-        # new
-        # ------------------------------------
         if QtCore.Qt.LeftButton and ev.buttons() and len(self.line.segments) == 1:
             self.line[-1] = pos
             self.line.update_segment(self.line[-1], self.line[-3], self.line[-2])

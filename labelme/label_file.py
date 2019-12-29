@@ -86,6 +86,7 @@ class LabelFile(object):
                 (
                     s['label'],
                     s['points'],
+                    s['segments'],
                     s['line_color'],
                     s['fill_color'],
                     s.get('shape_type', 'polygon'),

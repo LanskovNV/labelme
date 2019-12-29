@@ -991,10 +991,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def loadLabels(self, shapes):
         s = []
-        for label, points, line_color, fill_color, shape_type, flags in shapes:
+        for label, points, segments, line_color, fill_color, shape_type, flags in shapes:
             shape = Shape(label=label, shape_type=shape_type)
             for x, y in points:
                 shape.addPoint(QtCore.QPointF(x, y))
+            for beg, length in segments:
+                shape.addSegment(beg, length)
             shape.close()
 
             if line_color:
@@ -1034,6 +1036,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 fill_color=s.fill_color.getRgb()
                 if s.fill_color != self.fillColor else None,
                 points=[(p.x(), p.y()) for p in s.points],
+                segments=[(seg[0], seg[1]) for seg in s.segments],
                 shape_type=s.shape_type,
                 flags=s.flags
             )

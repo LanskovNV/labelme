@@ -56,6 +56,7 @@ def shapes_to_label(img_shape, shapes, label_name_to_value, type='class'):
     for shape in shapes:
         points = shape['points']
         label = shape['label']
+        segments = shape['segments']
         shape_type = shape.get('shape_type', None)
         if type == 'class':
             cls_name = label

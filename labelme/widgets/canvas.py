@@ -163,7 +163,10 @@ class Canvas(QtWidgets.QWidget):
             self.finalise()
 
     def updateLine(self, pos):
-        self.current.addPoint(self.line[-1], 1)
+        if len(self.line) >= 3:
+            self.current.addPoint(self.line[-1], 1, self.line[-3])
+        else:
+            self.current.addPoint(self.line[-1], 1)
         self.line.segments = []
         degree_increment = max(len(self.current.points) - self.current.segments_len - 1, 0)
         size = 2 + degree_increment
@@ -173,10 +176,27 @@ class Canvas(QtWidgets.QWidget):
         if self.current.isClosed():
             self.finalise()
 
+    # this function calculate pos of p2 regarding center
+    # symmetric with p1
+    # (p1 and p2 lying on diam of circle with center in "center" point)
+    def updateSymmetricPoint(self, p1, p2, center):
+        half_h = abs(center.y() - p1.y())
+        half_w = abs(center.x() - p1.x())
+        if center.x() > p1.x():
+            p2.setX(center.x() + half_w)
+        else:
+            p2.setX(center.x() - half_w)
+        if center.y() > p1.y():
+            p2.setY(center.y() + half_h)
+        else:
+            p2.setY(center.y() - half_h)
+
     def processLine(self, pos, ev):
         if QtCore.Qt.LeftButton and ev.buttons() and len(self.line.segments) == 1:
             self.line[-1] = pos
-            self.line.update_segment(self.line[-1], self.line[-3], self.line[-2])
+            self.updateSymmetricPoint(self.line[-1], self.line[-3], self.line[-2])
+            if self.outOfPixmap(self.line[-3]):
+                self.line[-3] = self.intersectionPoint(self.line[-3], self.line[-2])
         else:
             self.line[-1] = pos
 

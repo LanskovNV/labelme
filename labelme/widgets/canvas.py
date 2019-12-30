@@ -164,9 +164,9 @@ class Canvas(QtWidgets.QWidget):
 
     def updateLine(self, pos):
         if len(self.line) >= 3:
-            self.current.addPoint(self.line[-1], 1, self.line[-3])
+            self.current.addPoint(self.line[-1], True, self.line[-3])
         else:
-            self.current.addPoint(self.line[-1], 1)
+            self.current.addPoint(self.line[-1], True)
         self.line.segments = []
         degree_increment = max(len(self.current.points) - self.current.segments_len - 1, 0)
         size = 2 + degree_increment
@@ -441,7 +441,7 @@ class Canvas(QtWidgets.QWidget):
             elif not self.outOfPixmap(pos):
                 # Create new shape.
                 self.current = Shape(shape_type=self.createMode)
-                self.current.addPoint(pos, 1)
+                self.current.addPoint(pos, True)
                 self.line.points = [pos, pos]
                 self.setHiding()
                 self.drawingPolygon.emit(True)
@@ -604,7 +604,7 @@ class Canvas(QtWidgets.QWidget):
                 shape.paint(p)
         if self.current:
             self.current.paint(p)
-            self.line.paint(p)
+            self.line.paint(p, True)
         if self.selectedShapesCopy:
             for s in self.selectedShapesCopy:
                 s.paint(p)

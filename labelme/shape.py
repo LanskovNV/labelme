@@ -6,6 +6,8 @@ from qtpy import QtGui
 
 import labelme.utils
 
+class NoPointError(Exception):
+    pass
 
 # TODO(unknown):
 # - [opt] Store paths instead of creating new ones at each paint.
@@ -101,14 +103,13 @@ class Shape(object):
             seg_len = size
         else:
             size = 3 + degree_increment
-            # self.addOppozitePointForCurve(point)
             self.insertPoint(max(len(self.points) - 1, 1), new_p)
             seg_begin = len(self.points) - size
             seg_len = size
             self.points.append(point)
         self.addSegment(seg_begin, seg_len)
 
-    def addPoint(self, point, is_release=0, new_p=0):
+    def addPoint(self, point, is_release=False, new_p=0):
         if is_release and self.shape_type == 'curve':
             if point == self.points[-1] and len(self.points) == 1:
                 self.segments_len += 1
@@ -116,11 +117,14 @@ class Shape(object):
                 self.points.append(point)
                 self.segments_len += 1
             else:
-                degree_increment = max(len(self.points) - self.segments_len - 1, 0)
-                self.createSegment(point, degree_increment, new_p)
-                if point == self.points[0]:
-                    self.points.pop(-1)
-                    self.close()
+                try:
+                    degree_increment = max(len(self.points) - self.segments_len - 1, 0)
+                    self.createSegment(point, degree_increment, new_p)
+                    if point == self.points[0]:
+                        self.points.pop(-1)
+                        self.close()
+                except NoPointError as e:
+                    assert False, "new_p is empty !!!"
         else:
             if self.points and point == self.points[0]:
                 degree_increment = max(len(self.points) - self.segments_len, 0)
@@ -152,7 +156,7 @@ class Shape(object):
         x2, y2 = pt2.x(), pt2.y()
         return QtCore.QRectF(x1, y1, x2 - x1, y2 - y1)
 
-    def paint(self, painter):
+    def paint(self, painter, is_line=False):
         if self.points:
             color = self.select_line_color \
                 if self.selected else self.line_color
@@ -219,9 +223,7 @@ class Shape(object):
                     qpts = QtGui.QPolygonF(pts)
                     line_path.addPolygon(qpts)
                     line_path = line_path.simplified()
-                if self.isClosed() or \
-                        (len(self.segments) <= 1) and ((len(self.points) == 5)
-                        or (len(self.points) == 2)):
+                if self.isClosed() or is_line:
                     painter.setPen(dash_pen)
                     painter.drawPath(source_curve_path)
                     painter.setPen(pen)

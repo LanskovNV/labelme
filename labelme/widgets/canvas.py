@@ -176,27 +176,54 @@ class Canvas(QtWidgets.QWidget):
         if self.current.isClosed():
             self.finalise()
 
+    # fix coordinates if summetric point is out of Pixmap
+    def updatePixmapPoints(self, x, y, p1, p2):
+        size = self.pixmap.size()
+        xa = p1.x()
+        xb = p2.x()
+        ya = p1.y()
+        yb = p2.y()
+        edgeX, edgeY = x, y
+
+        if xa - xb != 0:
+            if edgeX < 0:
+                edgeX = 0
+                edgeY = (- xb * ya + yb * xa) / (xa - xb)
+            if edgeX >= size.width() - 1:
+                edgeX = size.width() - 1
+                edgeY = (ya - yb) / (xa - xb) * edgeX + (- xb * ya + yb * xa) / (xa - xb)
+        if ya - yb != 0:
+            if edgeY < 0:
+                edgeY = 0
+                edgeX = (- yb * xa + xb * ya) / (ya - yb)
+            if edgeY >= size.height() - 1:
+                edgeY = size.height() - 1
+                edgeX = (xa - xb) / (ya - yb) * edgeY + (- yb * xa + xb * ya) / (ya - yb)
+        return edgeX, edgeY
+
     # this function calculate pos of p2 regarding center
     # symmetric with p1
     # (p1 and p2 lying on diam of circle with center in "center" point)
     def updateSymmetricPoint(self, p1, p2, center):
         half_h = abs(center.y() - p1.y())
         half_w = abs(center.x() - p1.x())
+
         if center.x() > p1.x():
-            p2.setX(center.x() + half_w)
+            x = center.x() + half_w
         else:
-            p2.setX(center.x() - half_w)
+            x = center.x() - half_w
         if center.y() > p1.y():
-            p2.setY(center.y() + half_h)
+            y = center.y() + half_h
         else:
-            p2.setY(center.y() - half_h)
+            y = center.y() - half_h
+        new_x, new_y = self.updatePixmapPoints(x, y, p1, center)
+        p2.setX(new_x)
+        p2.setY(new_y)
 
     def processLine(self, pos, ev):
         if QtCore.Qt.LeftButton and ev.buttons() and len(self.line.segments) == 1:
             self.line[-1] = pos
             self.updateSymmetricPoint(self.line[-1], self.line[-3], self.line[-2])
-            if self.outOfPixmap(self.line[-3]):
-                self.line[-3] = self.intersectionPoint(self.line[-3], self.line[-2])
         else:
             self.line[-1] = pos
 

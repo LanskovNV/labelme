@@ -645,6 +645,9 @@ class Canvas(QtWidgets.QWidget):
         self.setHiding(False)
         self.newShape.emit()
         self.update()
+        # clear line shape after curve
+        self.line.segments = []
+        self.line.segments_len = 0
 
     def closeEnough(self, p1, p2):
         # d = distance(p1 - p2)

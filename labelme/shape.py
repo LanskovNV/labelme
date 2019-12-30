@@ -214,13 +214,17 @@ class Shape(object):
                     line_path.lineTo(self.points[0])
 
             if self.shape_type == "curve":
-                painter.setPen(dash_pen)
-                painter.drawPath(source_curve_path)
-                painter.setPen(pen)
-                qpts = QtGui.QPolygonF(pts)
+
                 if self.isClosed():
+                    qpts = QtGui.QPolygonF(pts)
                     line_path.addPolygon(qpts)
                     line_path = line_path.simplified()
+                if self.isClosed() or \
+                        (len(self.segments) <= 1) and ((len(self.points) == 5)
+                        or (len(self.points) == 2)):
+                    painter.setPen(dash_pen)
+                    painter.drawPath(source_curve_path)
+                    painter.setPen(pen)
             painter.drawPath(line_path)
             painter.drawPath(vrtx_path)
 

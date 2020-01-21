@@ -137,6 +137,9 @@ class Shape(object):
             else:
                 self.points.append(point)
 
+    def canAddPoint(self):
+        return self.shape_type in ['polygon', 'linestrip']
+
     def popPoint(self):
         if self.points:
             return self.points.pop()
@@ -144,6 +147,9 @@ class Shape(object):
 
     def insertPoint(self, i, point):
         self.points.insert(i, point)
+
+    def removePoint(self, i):
+        self.points.pop(i)
 
     def isClosed(self):
         return self._closed

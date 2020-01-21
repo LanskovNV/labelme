@@ -29,6 +29,7 @@ del here
 
 
 install_requires = [
+    'imgviz>=0.10.2',
     'matplotlib',
     'numpy',
     'Pillow>=2.8.0',
@@ -134,7 +135,7 @@ setup(
     package_data={'labelme': ['icons/*', 'config/*.yaml']},
     entry_points={
         'console_scripts': [
-            'labelme=labelme.main:main',
+            'labelme=labelme.__main__:main',
             'labelme_draw_json=labelme.cli.draw_json:main',
             'labelme_draw_label_png=labelme.cli.draw_label_png:main',
             'labelme_json_to_dataset=labelme.cli.json_to_dataset:main',

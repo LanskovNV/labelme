@@ -3,6 +3,7 @@ display_label_popup: true
 instance_label_auto_increment: true
 store_data: true
 keep_prev: false
+keep_prev_scale: false
 logger_level: info
 
 flags: null
@@ -41,7 +42,12 @@ fit_to_content:
   column: true
   row: false
 
+# canvas
 epsilon: 10.0
+canvas:
+  # None: do nothing
+  # close: close polygon
+  double_click: close
 
 shortcuts:
   close: Ctrl+W

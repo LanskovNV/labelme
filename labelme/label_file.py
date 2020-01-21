@@ -12,6 +12,9 @@ from labelme import QT4
 from labelme import utils
 
 
+PIL.Image.MAX_IMAGE_PIXELS = None
+
+
 class LabelFileError(Exception):
     pass
 
@@ -21,7 +24,7 @@ class LabelFile(object):
     suffix = '.json'
 
     def __init__(self, filename=None):
-        self.shapes = ()
+        self.shapes = []
         self.imagePath = None
         self.imageData = None
         if filename is not None:
@@ -82,18 +85,18 @@ class LabelFile(object):
             )
             lineColor = data['lineColor']
             fillColor = data['fillColor']
-            shapes = (
-                (
-                    s['label'],
-                    s['points'],
-                    s['segments'],
-                    s['line_color'],
-                    s['fill_color'],
-                    s.get('shape_type', 'polygon'),
-                    s.get('flags', {}),
+            shapes = [
+                dict(
+                    label=s['label'],
+                    points=s['points'],
+                    segments=s['segments'],
+                    line_color=s['line_color'],
+                    fill_color=s['fill_color'],
+                    shape_type=s.get('shape_type', 'polygon'),
+                    flags=s.get('flags', {}),
                 )
                 for s in data['shapes']
-            )
+            ]
         except Exception as e:
             raise LabelFileError(e)
 

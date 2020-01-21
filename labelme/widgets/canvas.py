@@ -26,7 +26,8 @@ class Canvas(QtWidgets.QWidget):
     selectionChanged = QtCore.Signal(list)
     shapeMoved = QtCore.Signal()
     drawingPolygon = QtCore.Signal(bool)
-    edgeSelected = QtCore.Signal(bool)
+    edgeSelected = QtCore.Signal(bool, object)
+    vertexSelected = QtCore.Signal(bool)
 
     CREATE, EDIT = 0, 1
 
@@ -37,6 +38,12 @@ class Canvas(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         self.epsilon = kwargs.pop('epsilon', 10.0)
+        self.double_click = kwargs.pop('double_click', 'close')
+        if self.double_click not in [None, 'close']:
+            raise ValueError(
+                'Unexpected value for double_click event: {}'
+                .format(self.double_click)
+            )
         super(Canvas, self).__init__(*args, **kwargs)
         # Initialise local state.
         self.mode = self.EDIT
@@ -309,11 +316,11 @@ class Canvas(QtWidgets.QWidget):
                 self.movingShape = True
             return
 
-        # Just hovering over the canvas, 2 posibilities:
+        # Just hovering over the canvas, 2 possibilities:
         # - Highlight shapes
         # - Highlight vertex
         # Update shape/vertex fill and tooltip value accordingly.
-        self.setToolTip("Image")
+        self.setToolTip(self.tr("Image"))
         for shape in reversed([s for s in self.shapes if self.isVisible(s)]):
             # Look for a nearby vertex to highlight. If that fails,
             # check if we happen to be inside a shape.
@@ -327,7 +334,7 @@ class Canvas(QtWidgets.QWidget):
                 self.hEdge = index_edge
                 shape.highlightVertex(index, shape.MOVE_VERTEX)
                 self.overrideCursor(CURSOR_POINT)
-                self.setToolTip("Click & drag to move point")
+                self.setToolTip(self.tr("Click & drag to move point"))
                 self.setStatusTip(self.toolTip())
                 self.update()
                 break
@@ -338,7 +345,7 @@ class Canvas(QtWidgets.QWidget):
                 self.hShape = shape
                 self.hEdge = index_edge
                 self.setToolTip(
-                    "Click & drag to move shape '%s'" % shape.label)
+                    self.tr("Click & drag to move shape '%s'") % shape.label)
                 self.setStatusTip(self.toolTip())
                 self.overrideCursor(CURSOR_GRAB)
                 self.update()
@@ -348,7 +355,8 @@ class Canvas(QtWidgets.QWidget):
                 self.hShape.highlightClear()
                 self.update()
             self.hVertex, self.hShape, self.hEdge = None, None, None
-        self.edgeSelected.emit(self.hEdge is not None)
+        self.edgeSelected.emit(self.hEdge is not None, self.hShape)
+        self.vertexSelected.emit(self.hVertex is not None)
 
     def addPointToEdge(self):
         if (self.hShape is None and
@@ -363,6 +371,21 @@ class Canvas(QtWidgets.QWidget):
         self.hShape = shape
         self.hVertex = index
         self.hEdge = None
+        self.movingShape = True
+
+    def removeSelectedPoint(self):
+        if (self.hShape is None and
+                self.prevMovePoint is None):
+            return
+        shape = self.hShape
+        point = self.prevMovePoint
+        index = shape.nearestVertex(point, self.epsilon)
+        shape.removePoint(index)
+        # shape.highlightVertex(index, shape.MOVE_VERTEX)
+        self.hShape = shape
+        self.hVertex = None
+        self.hEdge = None
+        self.movingShape = True  # Save changes
 
     def mousePressEvent(self, ev):
         if QT5:
@@ -430,9 +453,12 @@ class Canvas(QtWidgets.QWidget):
                 self.repaint()
         elif ev.button() == QtCore.Qt.LeftButton and self.selectedShapes:
             self.overrideCursor(CURSOR_GRAB)
-        if self.movingShape:
-            self.storeShapes()
-            self.shapeMoved.emit()
+        if self.movingShape and self.hShape:
+            index = self.shapes.index(self.hShape)
+            if (self.shapesBackups[-1][index].points !=
+                    self.shapes[index].points):
+                self.storeShapes()
+                self.shapeMoved.emit()
         # curves support
         if ev.button() == QtCore.Qt.LeftButton \
                 and self.drawing() and self.createMode == 'curve':
@@ -482,7 +508,8 @@ class Canvas(QtWidgets.QWidget):
     def mouseDoubleClickEvent(self, ev):
         # We need at least 4 points here, since the mousePress handler
         # adds an extra one before this handler is called.
-        if self.canCloseShape() and len(self.current) > 3:
+        if (self.double_click == 'close' and self.canCloseShape() and
+                len(self.current) > 3):
             self.current.popPoint()
             self.finalise()
 

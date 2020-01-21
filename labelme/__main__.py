@@ -2,9 +2,11 @@ import argparse
 import codecs
 import logging
 import os
+import os.path as osp
 import sys
 import yaml
 
+from qtpy import QtCore
 from qtpy import QtWidgets
 
 from labelme import __appname__
@@ -40,8 +42,10 @@ def main():
     default_config_file = os.path.join(os.path.expanduser('~'), '.labelmerc')
     parser.add_argument(
         '--config',
-        dest='config_file',
-        help='config file (default: %s)' % default_config_file,
+        dest='config',
+        help='config file or yaml-format string (default: {})'.format(
+            default_config_file
+        ),
         default=default_config_file,
     )
     # config for the gui
@@ -128,17 +132,17 @@ def main():
     if hasattr(args, 'label_flags'):
         if os.path.isfile(args.label_flags):
             with codecs.open(args.label_flags, 'r', encoding='utf-8') as f:
-                args.label_flags = yaml.load(f)
+                args.label_flags = yaml.safe_load(f)
         else:
-            args.label_flags = yaml.load(args.label_flags)
+            args.label_flags = yaml.safe_load(args.label_flags)
 
     config_from_args = args.__dict__
     config_from_args.pop('version')
     reset_config = config_from_args.pop('reset_config')
     filename = config_from_args.pop('filename')
     output = config_from_args.pop('output')
-    config_file = config_from_args.pop('config_file')
-    config = get_config(config_from_args, config_file)
+    config_file_or_yaml = config_from_args.pop('config')
+    config = get_config(config_file_or_yaml, config_from_args)
 
     if not config['labels'] and config['validate_label']:
         logger.error('--labels must be specified with --validatelabel or '
@@ -154,9 +158,15 @@ def main():
         else:
             output_dir = output
 
+    translator = QtCore.QTranslator()
+    translator.load(
+        QtCore.QLocale.system().name(),
+        osp.dirname(osp.abspath(__file__)) + '/translate'
+    )
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName(__appname__)
     app.setWindowIcon(newIcon('icon'))
+    app.installTranslator(translator)
     win = MainWindow(
         config=config,
         filename=filename,

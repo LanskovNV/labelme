@@ -158,7 +158,7 @@ class Canvas(QtWidgets.QWidget):
     def addLinePoint(self, pos):
         self.current.addPoint(self.line[-1])
 
-        degree_increment = max(len(self.current.points) - self.current.segments_len - 1, 0)
+        degree_increment = max(len(self.current.points) - self.current.points_in_segments - 1, 0)
         self.line.createSegment(self.line[-1], degree_increment)
 
         self.line.segments[0][1] += 1
@@ -175,7 +175,7 @@ class Canvas(QtWidgets.QWidget):
         else:
             self.current.addPoint(self.line[-1], True)
         self.line.segments = []
-        degree_increment = max(len(self.current.points) - self.current.segments_len - 1, 0)
+        degree_increment = max(len(self.current.points) - self.current.points_in_segments - 1, 0)
         size = 2 + degree_increment
         ind = max(len(self.current.points) - size, 0)
         self.line.points = self.current[ind:]
@@ -674,7 +674,7 @@ class Canvas(QtWidgets.QWidget):
         self.update()
         # clear line shape after curve
         self.line.segments = []
-        self.line.segments_len = 0
+        self.line.points_in_segments = 0
 
     def closeEnough(self, p1, p2):
         # d = distance(p1 - p2)

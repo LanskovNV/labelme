@@ -43,7 +43,7 @@ class Shape(object):
         self.label = label
         self.points = []
         self.segments = []
-        self.segments_len = 0
+        self.points_in_segments = 0
         self.fill = False
         self.selected = False
         self.shape_type = shape_type
@@ -84,10 +84,10 @@ class Shape(object):
 
     def addSegment(self, seg_begin, seg_len):
         if len(self.segments) == 0:
-            self.segments_len = 0
-            self.segments_len += seg_len
+            self.points_in_segments = 0
+            self.points_in_segments += seg_len
         else:
-            self.segments_len += (seg_len - 1)
+            self.points_in_segments += (seg_len - 1)
         new_segment = [seg_begin, seg_len]
         self.segments.append(new_segment)
 
@@ -112,13 +112,13 @@ class Shape(object):
     def addPoint(self, point, is_release=False, new_p=0):
         if is_release and self.shape_type == 'curve':
             if point == self.points[-1] and len(self.points) == 1:
-                self.segments_len += 1
+                self.points_in_segments += 1
             elif len(self.segments) == 0 and len(self.points) == 1:
                 self.points.append(point)
-                self.segments_len += 1
+                self.points_in_segments += 1
             else:
                 try:
-                    degree_increment = max(len(self.points) - self.segments_len - 1, 0)
+                    degree_increment = max(len(self.points) - self.points_in_segments - 1, 0)
                     self.createSegment(point, degree_increment, new_p)
                     if point == self.points[0]:
                         self.points.pop(-1)
@@ -127,7 +127,7 @@ class Shape(object):
                     assert False, "new_p is empty !!!"
         else:
             if self.points and point == self.points[0]:
-                degree_increment = max(len(self.points) - self.segments_len, 0)
+                degree_increment = max(len(self.points) - self.points_in_segments, 0)
                 if self.shape_type == 'curve' and degree_increment == 1:
                     size = 2 + degree_increment
                     seg_begin = len(self.points) - size + 1

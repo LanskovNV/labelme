@@ -185,7 +185,8 @@ class Canvas(QtWidgets.QWidget):
 
     # fix coordinates if summetric point is out of Pixmap
     def updatePixmapPoints(self, x, y, p1, p2):
-        size = self.pixmap.size()
+        max_width = self.pixmap.size().width() - 1
+        max_height = self.pixmap.size().width() - 1
         xa = p1.x()
         xb = p2.x()
         ya = p1.y()
@@ -193,19 +194,11 @@ class Canvas(QtWidgets.QWidget):
         edgeX, edgeY = x, y
 
         if xa - xb != 0:
-            if edgeX < 0:
-                edgeX = 0
-                edgeY = (- xb * ya + yb * xa) / (xa - xb)
-            if edgeX >= size.width() - 1:
-                edgeX = size.width() - 1
-                edgeY = (ya - yb) / (xa - xb) * edgeX + (- xb * ya + yb * xa) / (xa - xb)
+            edgeX = min(max_width, max(edgeX, 0))
+            edgeY = (ya - yb) / (xa - xb) * edgeX + (- xb * ya + yb * xa) / (xa - xb)
         if ya - yb != 0:
-            if edgeY < 0:
-                edgeY = 0
-                edgeX = (- yb * xa + xb * ya) / (ya - yb)
-            if edgeY >= size.height() - 1:
-                edgeY = size.height() - 1
-                edgeX = (xa - xb) / (ya - yb) * edgeY + (- yb * xa + xb * ya) / (ya - yb)
+            edgeY = min(max_height, max(edgeY, 0))
+            edgeX = (xa - xb) / (ya - yb) * edgeY + (- yb * xa + xb * ya) / (ya - yb)
         return edgeX, edgeY
 
     # this function calculate pos of p2 regarding center

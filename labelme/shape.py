@@ -20,6 +20,8 @@ DEFAULT_SELECT_FILL_COLOR = QtGui.QColor(0, 128, 255, 155)
 DEFAULT_VERTEX_FILL_COLOR = QtGui.QColor(0, 255, 0, 255)
 DEFAULT_HVERTEX_FILL_COLOR = QtGui.QColor(255, 0, 0)
 
+QUADRATIC_BEZIER_ORDER = 2
+CUBIC_BEZIER_ORDER = 3
 
 class Shape(object):
 
@@ -96,11 +98,11 @@ class Shape(object):
 
     def createSegment(self, point, degree_increment, new_p=0):
         if point == self.points[-1]:
-            size = 2 + degree_increment
+            size = QUADRATIC_BEZIER_ORDER + degree_increment
             seg_begin = len(self.points) - size
             seg_len = size
         else:
-            size = 3 + degree_increment
+            size = CUBIC_BEZIER_ORDER + degree_increment
             self.insertPoint(max(len(self.points) - 1, 1), new_p)
             seg_begin = len(self.points) - size
             seg_len = size
@@ -127,7 +129,7 @@ class Shape(object):
             if self.points and point == self.points[0]:
                 degree_increment = max(len(self.points) - self.points_in_segments, 0)
                 if self.shape_type == 'curve' and degree_increment == 1:
-                    size = 2 + degree_increment
+                    size = QUADRATIC_BEZIER_ORDER + degree_increment
                     seg_begin = len(self.points) - size + 1
                     seg_len = size
                     self.addSegment(seg_begin, seg_len)

@@ -834,76 +834,35 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions.undo.setEnabled(not drawing)
         self.actions.delete.setEnabled(not drawing)
 
+    def setCreateActions(self, act):
+        self.actions.createMode.setEnabled(act['polygon'])
+        self.actions.createRectangleMode.setEnabled(act['rectangle'])
+        self.actions.createCircleMode.setEnabled(act['circle'])
+        self.actions.createLineMode.setEnabled(act['line'])
+        self.actions.createPointMode.setEnabled(act['point'])
+        self.actions.createLineStripMode.setEnabled(act['linestrip'])
+        self.actions.createCurveMode.setEnabled(act['curve'])
+
     def toggleDrawMode(self, edit=True, createMode='polygon'):
         self.canvas.setEditing(edit)
         self.canvas.createMode = createMode
-        if edit:
-            self.actions.createMode.setEnabled(True)
-            self.actions.createRectangleMode.setEnabled(True)
-            self.actions.createCircleMode.setEnabled(True)
-            self.actions.createLineMode.setEnabled(True)
-            self.actions.createPointMode.setEnabled(True)
-            self.actions.createLineStripMode.setEnabled(True)
-            self.actions.createCurveMode.setEnabled(True)
-        else:
-            if createMode == 'polygon':
-                self.actions.createMode.setEnabled(False)
-                self.actions.createRectangleMode.setEnabled(True)
-                self.actions.createCircleMode.setEnabled(True)
-                self.actions.createLineMode.setEnabled(True)
-                self.actions.createPointMode.setEnabled(True)
-                self.actions.createLineStripMode.setEnabled(True)
-                self.actions.createCurveMode.setEnabled(True)
-            elif createMode == 'rectangle':
-                self.actions.createMode.setEnabled(True)
-                self.actions.createRectangleMode.setEnabled(False)
-                self.actions.createCircleMode.setEnabled(True)
-                self.actions.createLineMode.setEnabled(True)
-                self.actions.createPointMode.setEnabled(True)
-                self.actions.createLineStripMode.setEnabled(True)
-                self.actions.createCurveMode.setEnabled(True)
-            elif createMode == 'line':
-                self.actions.createMode.setEnabled(True)
-                self.actions.createRectangleMode.setEnabled(True)
-                self.actions.createCircleMode.setEnabled(True)
-                self.actions.createLineMode.setEnabled(False)
-                self.actions.createPointMode.setEnabled(True)
-                self.actions.createLineStripMode.setEnabled(True)
-                self.actions.createCurveMode.setEnabled(True)
-            elif createMode == 'point':
-                self.actions.createMode.setEnabled(True)
-                self.actions.createRectangleMode.setEnabled(True)
-                self.actions.createCircleMode.setEnabled(True)
-                self.actions.createLineMode.setEnabled(True)
-                self.actions.createPointMode.setEnabled(False)
-                self.actions.createLineStripMode.setEnabled(True)
-                self.actions.createCurveMode.setEnabled(True)
-            elif createMode == "circle":
-                self.actions.createMode.setEnabled(True)
-                self.actions.createRectangleMode.setEnabled(True)
-                self.actions.createCircleMode.setEnabled(False)
-                self.actions.createLineMode.setEnabled(True)
-                self.actions.createPointMode.setEnabled(True)
-                self.actions.createLineStripMode.setEnabled(True)
-                self.actions.createCurveMode.setEnabled(True)
-            elif createMode == "linestrip":
-                self.actions.createMode.setEnabled(True)
-                self.actions.createRectangleMode.setEnabled(True)
-                self.actions.createCircleMode.setEnabled(True)
-                self.actions.createLineMode.setEnabled(True)
-                self.actions.createPointMode.setEnabled(True)
-                self.actions.createLineStripMode.setEnabled(False)
-                self.actions.createCurveMode.setEnabled(True)
-            elif createMode == "curve":
-                self.actions.createMode.setEnabled(True)
-                self.actions.createRectangleMode.setEnabled(True)
-                self.actions.createCircleMode.setEnabled(True)
-                self.actions.createLineMode.setEnabled(True)
-                self.actions.createPointMode.setEnabled(True)
-                self.actions.createLineStripMode.setEnabled(True)
-                self.actions.createCurveMode.setEnabled(False)
-            else:
+        actions = {
+            'polygon': True,
+            'rectangle': True,
+            'circle': True,
+            'line': True,
+            'point': True,
+            'linestrip': True,
+            'curve': True
+        }
+
+        if not edit:
+            try:
+                actions[createMode] = False
+            except KeyError:
                 raise ValueError('Unsupported createMode: %s' % createMode)
+
+        self.setCreateActions(actions)
         self.actions.editMode.setEnabled(not edit)
 
     def setEditMode(self):

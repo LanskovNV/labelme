@@ -186,7 +186,7 @@ class Canvas(QtWidgets.QWidget):
     # fix coordinates if summetric point is out of Pixmap
     def updatePixmapPoints(self, x, y, p1, p2):
         max_width = self.pixmap.size().width() - 1
-        max_height = self.pixmap.size().width() - 1
+        max_height = self.pixmap.size().height() - 1
         xa = p1.x()
         xb = p2.x()
         ya = p1.y()

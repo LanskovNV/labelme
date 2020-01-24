@@ -91,8 +91,6 @@ class Shape(object):
         new_segment = [seg_begin, seg_len]
         self.segments.append(new_segment)
 
-    # TODO:
-    # modify to provide add point to edge option for bezier curves
     def addPointToSegment(self, point, seg_id):
         self.segments[seg_id][1] += 1
 

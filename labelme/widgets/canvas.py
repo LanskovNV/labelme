@@ -185,21 +185,26 @@ class Canvas(QtWidgets.QWidget):
 
     # fix coordinates if summetric point is out of Pixmap
     def updatePixmapPoints(self, x, y, p1, p2):
-        max_width = self.pixmap.size().width() - 1
-        max_height = self.pixmap.size().height() - 1
-        xa = p1.x()
-        xb = p2.x()
-        ya = p1.y()
-        yb = p2.y()
-        edgeX, edgeY = x, y
-
-        if xa - xb != 0:
-            edgeX = min(max_width, max(edgeX, 0))
-            edgeY = (ya - yb) / (xa - xb) * edgeX + (- xb * ya + yb * xa) / (xa - xb)
-        if ya - yb != 0:
-            edgeY = min(max_height, max(edgeY, 0))
-            edgeX = (xa - xb) / (ya - yb) * edgeY + (- yb * xa + xb * ya) / (ya - yb)
-        return edgeX, edgeY
+        new_coords = {
+            "edge_x": x,
+            "edge_y": y
+        }
+        coord_orders = {
+            0: ["x", "y", "width"],
+            1: ["y", "x", "height"]
+        }
+        for coord in coord_orders.values():
+            xa = getattr(p1, coord[0])()
+            xb = getattr(p2, coord[0])()
+            ya = getattr(p1, coord[1])()
+            yb = getattr(p2, coord[1])()
+            max_val = getattr(self.pixmap.size(), coord[2])() - 1
+            if xa - xb != 0:
+                first = "edge_" + coord[0]
+                second = "edge_" + coord[1]
+                new_coords[first] = min(max_val, max(new_coords[first], 0))
+                new_coords[second] = ((ya - yb) * new_coords[first] + (- xb * ya + yb * xa)) / (xa - xb)
+        return new_coords["edge_x"], new_coords["edge_y"]
 
     # this function calculate pos of p2 regarding center
     # symmetric with p1
